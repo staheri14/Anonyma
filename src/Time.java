@@ -4,12 +4,12 @@
 public class Time {
 
     //these fields keep the time for the indicated algorithm
-    private static double init=0;
-    private static double Tgen=0;
-    private static double Igen=0;
-    private static double Icoll=0;
-    private static double IVrfy=0;
-    private static double Reg=0;
+    private  double init=0;
+    private  double Tgen=0;
+    private  double Igen=0;
+    private  double Icoll=0;
+    private  double IVrfy=0;
+    private  double Reg=0;
     //these fields record the number of times each algorithm is get called
     static double initN=0;
     static double TgenN=0;
@@ -18,38 +18,26 @@ public class Time {
     static double IVrfyN=0;
     static double RegN=0;
 
-    static double addInit(double v)
-    {
-        init+=v;
-        return init;
+    public Time(double tgen, double igen, double icoll, double IVrfyTime) {
+        Tgen = tgen;
+        Igen = igen;
+        Icoll = icoll;
+        IVrfy = IVrfyTime;
     }
 
-    static double addIgen(double v)
-    {
-        Igen+=v;
-        return Igen;
-    }
-
-    static double addTgen(double v)
-    {
-        Tgen+=v;
+    public double getTgen() {
         return Tgen;
     }
 
-    static double addIcoll(double v)
-    {
-        Icoll+=v;
-        return Icoll;
-    }
-    static double addReg(double v)
-    {
-        Reg+=v;
-        return Reg;
-    }
-    static double addIvrfy(double v)
-    {
-        IVrfy+=v;
-        return IVrfy;
+    public double getIgen() {
+        return Igen;
     }
 
+    public double getIcoll() {
+        return Icoll;
+    }
+
+    public double getIVrfy() {
+        return IVrfy;
+    }
 }

@@ -19,7 +19,7 @@ import org.bouncycastle.jce.spec.ElGamalParameterSpec;
 public class ElGamal {
 
 	public static Key pubKey;
-	
+
 	/**
 	 * Generates the pair of private and public key for ElGamal
 	 * @param Prime p
@@ -30,13 +30,14 @@ public class ElGamal {
 	 * @throws NoSuchProviderException
 	 * @throws InvalidAlgorithmParameterException
 	 */
-	public KeyPair generateKeyPair(BigInteger p, BigInteger g, SecureRandom random) 
+	public KeyPair generateKeyPair(BigInteger p, BigInteger g, SecureRandom random)
 			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
 		ElGamalParameterSpec specParams = new ElGamalParameterSpec(p,g);
 		KeyPairGenerator generator = KeyPairGenerator.getInstance("ElGamal", "BC");
 		generator.initialize(specParams, random);
 		KeyPair pair = generator.generateKeyPair();
 		pubKey = pair.getPublic();
+
 		return pair;
 	}
 
@@ -56,6 +57,31 @@ public class ElGamal {
 		cipher.init(true, publicKey);
 		byte[] cipherText = cipher.processBlock(plainText, 0, plainText.length);
 
+		return cipherText;
+	}
+
+	public BigInteger[] encrypt(BigInteger plainText, Key pubKey, BigInteger q) throws IOException, InvalidCipherTextException {
+		AsymmetricKeyParameter publicKey = (AsymmetricKeyParameter) PublicKeyFactory.createKey(pubKey.getEncoded());
+
+		//AsymmetricBlockCipher cipher = new ElGamalEngine();
+		//cipher.init(true, publicKey);
+		//byte[] cipherText = cipher.processBlock(plainText, 0, plainText.length);
+
+		ElGamalPublicKey pub = (ElGamalPublicKey) pubKey;
+
+		BigInteger h = pub.getY();
+		BigInteger g = pub.getParameters().getG();
+		BigInteger p = pub.getParameters().getP();
+
+
+
+
+		SecureRandom random = new SecureRandom();
+
+		BigInteger r = new BigInteger(q.bitLength(), random).mod(q);
+		BigInteger c1= plainText.multiply(h.modPow(r,p)).mod(p);
+		BigInteger c2= g.modPow(r,p);
+		BigInteger [] cipherText={c1,c2};
 		return cipherText;
 	}
 
@@ -90,6 +116,7 @@ public class ElGamal {
 	public byte[] evaluate(byte[] m1_e, byte[] m2_e, Key dk) throws InvalidCipherTextException, IOException {
 		ElGamalPublicKey pub = (ElGamalPublicKey) pubKey;
 		BigInteger p = pub.getParameters().getP();
+
 
 		byte[] combined = new byte[m1_e.length];
 

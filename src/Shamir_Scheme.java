@@ -8,9 +8,6 @@ public class Shamir_Scheme {
 	 * @param secret
 	 * @param t
 	 * 			Threshold
-	 * @param p
-	 * 			Prime mod
-	 * @param random
 	 * @return function f
 	 */
 	public BigInteger[] functionGeneration(BigInteger secret, int t, BigInteger q) {

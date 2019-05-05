@@ -3,6 +3,7 @@ import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -10,6 +11,7 @@ import java.security.SecureRandom;
 import java.security.SignatureException;
 
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.jce.interfaces.ElGamalPublicKey;
 import org.bouncycastle.util.BigIntegers;
 
 public class Inviter {
@@ -20,7 +22,7 @@ public class Inviter {
 	
 	/**
 	 * Generates the invitation for the invitee given the invitee's token
-	 * @param Token
+	 * @param token
 	 * @param s
 	 * @param vk
 	 * @param ek
@@ -33,19 +35,19 @@ public class Inviter {
 	 * @throws SignatureException 
 	 * @throws InvalidKeyException 
 	 */
-	public Invitation Igen(BigInteger[] Token, SecretShare s, PublicKey vk, Key ek) 
+	public Invitation Igen(Token token, SecretShare s, PublicKey vk, Key ek)
 			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, 
 			InvalidKeyException, SignatureException, InvalidCipherTextException, IOException {
 		server = Server.getInstance();
 		rsa = new RSA_Signature(server.getSignatureSecurityParameter());
 		gamal = new ElGamal();
-		String concat = Token[1].toString()+Token[2].toString();
-		if(rsa.verify(new BigInteger(concat), Token[0].toByteArray(), vk)) {
+		String concat = token.getIndex().toString()+token.getOmega().toString();
+		if(rsa.verify(new BigInteger(concat), token.getSign(), vk)) {
 			SecureRandom random = new SecureRandom();
 			
 			BigInteger di = new BigInteger(server.getQ().bitLength(), random).mod(server.getQ());
 
-			BigInteger w = Token[2];
+			BigInteger w = token.getOmega();
 			BigInteger T = w.modPow((di.add(s.getShare())), server.getP());
 
 			BigInteger m = w.modPow(di, server.getP());
@@ -55,5 +57,7 @@ public class Inviter {
 		}
 		return null;
 	}
+
+
 
 }

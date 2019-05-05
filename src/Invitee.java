@@ -19,9 +19,7 @@ public class Invitee {
 	
 	/**
 	 * Collect the invitations into one invitation letter
-	 * @param Invitations[]
 	 * @param ek
-	 * @param Token
 	 * @return
 	 * @throws NoSuchProviderException 
 	 * @throws NoSuchAlgorithmException 
@@ -29,7 +27,7 @@ public class Invitee {
 	 * @throws InvalidCipherTextException 
 	 * @throws InvalidAlgorithmParameterException 
 	 */
-	public Invitation Icoll(Invitation[] Inv, Key ek, BigInteger[] Token) 
+	public Invitation Icoll(Invitation[] Inv, Key ek, Token token)
 			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidCipherTextException, IOException, InvalidAlgorithmParameterException {
 		server = Server.getInstance();
 		shamir = new Shamir_Scheme();
@@ -38,7 +36,7 @@ public class Invitee {
 		SecureRandom random = new SecureRandom();
 		BigInteger p = server.getP();
 		BigInteger q = server.getQ();
-		BigInteger w = Token[2];
+		BigInteger w = token.getOmega();
 		d = new BigInteger(q.bitLength(), random).mod(q);
 		
 		int[] IDs = new int[Inv.length];
