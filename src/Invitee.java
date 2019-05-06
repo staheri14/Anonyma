@@ -50,13 +50,14 @@ public class Invitee {
 		}		
 				
 		BigInteger T = w.modPow(d, p); 
-		byte[] ed = gamal.encrypt(BigIntegers.asUnsignedByteArray(T), ek);
+		BigInteger[] ed = gamal.encrypt(T, ek,q);
 		for(int i = 0; i < Inv.length; i++) {			
 			T = T.multiply((Inv[i].getT()).modPow(B[i], p));
-			ed = gamal.multiply(ed, gamal.pow(Inv[i].getEd(), B[i], server.ek), server.ek);
+			//ed = gamal.multiply(ed, gamal.pow(Inv[i].getEd(), B[i], server.ek), server.ek);
+			ed = gamal.multiply(ed, gamal.pow(Inv[i].getEd(), B[i], server.ek, q), server.ek, q);
 		}
 		
-		return new Invitation(T.mod(p), ed, null);
+		return new Invitation(T.mod(p), ed, null, null);
 				
 	}
 	

@@ -51,8 +51,9 @@ public class Inviter {
 			BigInteger T = w.modPow((di.add(s.getShare())), server.getP());
 
 			BigInteger m = w.modPow(di, server.getP());
-			byte[] ed = gamal.encrypt(BigIntegers.asUnsignedByteArray(m), ek);
-			Invitation invite = new Invitation(T, ed, s.getNumber());
+			//byte[] ed = gamal.encrypt(BigIntegers.asUnsignedByteArray(m), ek);
+			BigInteger [] ed=gamal.encrypt(m, ek,server.getQ());
+			Invitation invite = new Invitation(T, ed, s.getNumber(),di);
 			return invite;
 		}
 		return null;

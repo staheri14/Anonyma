@@ -9,6 +9,8 @@ public class Time {
     private  double Igen=0;
     private  double Icoll=0;
     private  double IVrfy=0;
+    private  double Ipoic=0;
+    private  double IpoicV=0;
     private  double Reg=0;
     //these fields record the number of times each algorithm is get called
     static double initN=0;
@@ -18,11 +20,13 @@ public class Time {
     static double IVrfyN=0;
     static double RegN=0;
 
-    public Time(double tgen, double igen, double icoll, double IVrfyTime) {
+    public Time(double tgen, double igen, double icoll, double IVrfyTime, double ipoic, double ipoicV) {
         Tgen = tgen;
         Igen = igen;
         Icoll = icoll;
         IVrfy = IVrfyTime;
+        this.Ipoic=ipoic;
+        this.IpoicV=ipoicV;
     }
 
     public double getTgen() {
@@ -39,5 +43,13 @@ public class Time {
 
     public double getIVrfy() {
         return IVrfy;
+    }
+
+    public double getIpoic() {
+        return Ipoic;
+    }
+
+    public double getIpoicV() {
+        return IpoicV;
     }
 }

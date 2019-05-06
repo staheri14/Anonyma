@@ -1,12 +1,13 @@
 import java.math.BigInteger;
 
 public class POICproof {
-    BigInteger A,B,C,Z1,Z2,Z3,e;
+    BigInteger A,B1,B2,C,Z1,Z2,Z3,e;
 
 
-    public POICproof(BigInteger a, BigInteger b, BigInteger c, BigInteger z1, BigInteger z2, BigInteger z3, BigInteger e) {
+    public POICproof(BigInteger a, BigInteger b1, BigInteger b2, BigInteger c, BigInteger z1, BigInteger z2, BigInteger z3, BigInteger e) {
         A = a;
-        B = b;
+        B1 = b1;
+        B2 = b2;
         C = c;
         Z1 = z1;
         Z2 = z2;
@@ -18,8 +19,10 @@ public class POICproof {
         return A;
     }
 
-    public BigInteger getB() {
-        return B;
+    public BigInteger getB1() { return B1; }
+
+    public BigInteger getB2() {
+        return B2;
     }
 
     public BigInteger getC() {

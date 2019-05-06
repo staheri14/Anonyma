@@ -247,7 +247,8 @@ throws InvalidKeyException, NoSuchAlgorithmException, SignatureException{
 	 * @throws IOException
 	 */
 	public boolean verify(Invitation InvLet, Token token)
-			throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, InvalidCipherTextException, IOException {
+			throws Exception,InvalidKeyException, NoSuchAlgorithmException, SignatureException, InvalidCipherTextException, IOException {
+
 		return IVrfy(InvLet, token, (PublicKey) vk, dk);
 	}
 	
@@ -262,18 +263,26 @@ throws InvalidKeyException, NoSuchAlgorithmException, SignatureException{
 	 * @throws InvalidCipherTextException
 	 * @throws IOException
 	 */
-	private boolean IVrfy(Invitation InvLet, Token token, PublicKey vk, Key dk)
-			throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, InvalidCipherTextException, IOException {
+	private boolean IVrfy(Invitation InvLet, Token token, PublicKey vk, Key dk) throws Exception, InvalidKeyException, NoSuchAlgorithmException, SignatureException, InvalidCipherTextException, IOException {
 		String concat = token.getIndex().toString()+token.getOmega().toString();
 		if(rsa.verify(new BigInteger(concat), token.getSign(), vk)) {
 			//byte[] wDelta = gamal.decrypt(InvLet.getEd(), dk);
 
 			BigInteger wS = token.getOmega().modPow(S, p);
-			BigInteger T = new BigInteger(1, gamal.evaluate(InvLet.getEd(), gamal.encrypt(BigIntegers.asUnsignedByteArray(wS), ek), dk)).mod(p);
-			
-			if(T.equals(InvLet.getT())) {
+			BigInteger  wDelta=gamal.decrypt(InvLet.getEd(),dk,q);
+
+			BigInteger result= (wS.multiply(wDelta)).mod(p);
+			//BigInteger T = new BigInteger(1, gamal.evaluate(InvLet.getEd(), gamal.encrypt(BigIntegers.asUnsignedByteArray(wS), ek), dk)).mod(p);
+			//BigInteger T = new BigInteger(1, gamal.evaluate(InvLet.getEd(), gamal.encrypt(BigIntegers.asUnsignedByteArray(wS), ek), dk)).mod(p);
+
+			/*if(T.equals(InvLet.getT())) {
 				return true;
-			} 
+			} */
+
+			if(result.equals(InvLet.getT()))
+			{
+				return true;
+			}
 		}
 		return false;
 	}

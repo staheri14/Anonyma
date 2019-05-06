@@ -11,6 +11,7 @@ import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.ElGamalEngine;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.params.ElGamalPrivateKeyParameters;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jce.interfaces.ElGamalPublicKey;
@@ -41,25 +42,19 @@ public class ElGamal {
 		return pair;
 	}
 
+	//=======================================================================================
+	//---------------Functions with BigInteger-----------------------------------------------
+	//=======================================================================================
+
 	/**
-	 * Encrypts the plain text into a cipher text suing ElGamal encryption scheme
-	 * 
+	 *
 	 * @param plainText
-	 * @param publicKey
-	 * @return encrypted cipherText
+	 * @param pubKey
+	 * @param q
+	 * @return
 	 * @throws IOException
 	 * @throws InvalidCipherTextException
 	 */
-	public byte[] encrypt(byte[] plainText, Key pubKey) throws IOException, InvalidCipherTextException {
-		AsymmetricKeyParameter publicKey = (AsymmetricKeyParameter) PublicKeyFactory.createKey(pubKey.getEncoded());
-
-		AsymmetricBlockCipher cipher = new ElGamalEngine();
-		cipher.init(true, publicKey);
-		byte[] cipherText = cipher.processBlock(plainText, 0, plainText.length);
-
-		return cipherText;
-	}
-
 	public BigInteger[] encrypt(BigInteger plainText, Key pubKey, BigInteger q) throws IOException, InvalidCipherTextException {
 		AsymmetricKeyParameter publicKey = (AsymmetricKeyParameter) PublicKeyFactory.createKey(pubKey.getEncoded());
 
@@ -81,15 +76,107 @@ public class ElGamal {
 		BigInteger r = new BigInteger(q.bitLength(), random).mod(q);
 		BigInteger c1= plainText.multiply(h.modPow(r,p)).mod(p);
 		BigInteger c2= g.modPow(r,p);
-		BigInteger [] cipherText={c1,c2};
+		BigInteger [] cipherText={c1,c2, r};
 		return cipherText;
 	}
 
 	/**
+	 *
+	 * @param m1_e
+	 * @param m2_e
+	 * @param ek
+	 * @return
+	 */
+	public BigInteger[] multiply(BigInteger[] m1_e, BigInteger[] m2_e, Key ek, BigInteger q) {
+		ElGamalPublicKey pub = (ElGamalPublicKey) ek;
+		BigInteger p = pub.getParameters().getP();
+
+		BigInteger[] product=new BigInteger[3];
+		product[0]= m1_e[0].multiply(m2_e[0]).mod(p);
+		product[1]= m1_e[1].multiply(m2_e[1]);
+		product[2]= (m1_e[2].add(m2_e[2])).mod(q);
+
+		return  product;
+
+	}
+
+	public BigInteger[] pow(BigInteger[] m1_e, BigInteger B, Key ek, BigInteger q) {
+		ElGamalPublicKey pub = (ElGamalPublicKey) ek;
+		BigInteger p = pub.getParameters().getP();
+
+		BigInteger[] product=new BigInteger[3];
+
+		product[0]=m1_e[0].modPow(B,p);
+		product[1]=m1_e[1].modPow(B,p);
+		product[2]=(m1_e[2].multiply(B)).mod(q);
+
+		return product;
+	}
+
+	/**
+	 *
+	 * @param m1_e
+	 * @param m2_e
+	 * @param dk
+	 * @return
+	 * @throws InvalidCipherTextException
+	 * @throws IOException
+	 */
+
+	public BigInteger evaluate(BigInteger[] m1_e, BigInteger[] m2_e, Key dk, BigInteger q) throws Exception{
+		ElGamalPublicKey pub = (ElGamalPublicKey) pubKey;
+		BigInteger p = pub.getParameters().getP();
+
+		BigInteger[] product=multiply(m1_e,m2_e,pub,q);
+
+		ElGamalPrivateKeyParameters privateKey = (ElGamalPrivateKeyParameters) PrivateKeyFactory.createKey(dk.getEncoded());
+	    BigInteger secret=privateKey.getX();
+
+	    BigInteger plaintext=decrypt(product, pub,q);
+
+
+
+		return plaintext  ;
+	}
+
+	public BigInteger decrypt(BigInteger[] cipherText, Key dk, BigInteger q) throws Exception
+	{
+		ElGamalPublicKey pub = (ElGamalPublicKey) pubKey;
+		BigInteger p = pub.getParameters().getP();
+		ElGamalPrivateKeyParameters privateKey = (ElGamalPrivateKeyParameters) PrivateKeyFactory.createKey(dk.getEncoded());
+		BigInteger secret=privateKey.getX();
+
+		BigInteger c2inv=(cipherText[1].modPow(secret,p)).modInverse(p);
+		BigInteger plaintext=(cipherText[0].multiply(c2inv)).mod(p);
+
+		return  plaintext;
+
+	}
+
+	//=======================================================================================
+	//---------------Functions with ByteArrays-----------------------------------------------
+	//=======================================================================================
+	/**
+	 * Encrypts the plain text into a cipher text suing ElGamal encryption scheme
+	 * 
+	 * @param plainText
+	 * @return encrypted cipherText
+	 * @throws IOException
+	 * @throws InvalidCipherTextException
+	 */
+	public byte[] encrypt(byte[] plainText, Key pubKey) throws IOException, InvalidCipherTextException {
+		AsymmetricKeyParameter publicKey = (AsymmetricKeyParameter) PublicKeyFactory.createKey(pubKey.getEncoded());
+
+		AsymmetricBlockCipher cipher = new ElGamalEngine();
+		cipher.init(true, publicKey);
+		byte[] cipherText = cipher.processBlock(plainText, 0, plainText.length);
+
+		return cipherText;
+	}
+	/**
 	 * Decrypts a ElGamal cipher text into a plain text
 	 * 
 	 * @param cipherText
-	 * @param private key 
 	 * @return plainText 
 	 * @throws IOException
 	 * @throws InvalidCipherTextException
@@ -160,7 +247,6 @@ public class ElGamal {
 	 * Multiplies two cipher texts into one, returns encrypted value
 	 * @param m1_e
 	 * @param m2_e
-	 * @param encryption key
 	 * @return Enc(m1 * m2)
 	 */
 	public byte[] multiply(byte[] m1_e, byte[] m2_e, Key ek) {
@@ -209,7 +295,6 @@ public class ElGamal {
 	 * Enc(m1)^B
 	 * @param m1_e
 	 * @param B - exponent
-	 * @param encryption_key
 	 * @return Enc(m1^B)
 	 */
 	public byte[] pow(byte[] m1_e, BigInteger B, Key ek) {

@@ -7,7 +7,7 @@ import java.util.Random;
 public class Test {
 	//List<User> members;
 	static int M=100; //number of initial members
-	static int N=1000; //number of new users to be added
+	static int N=100; //number of new users to be added
 
 
 	public static void main(String[] args) throws Exception {
@@ -56,7 +56,7 @@ public class Test {
 			{
 				index=r.nextInt(range);
 			}
-			list.add(index);
+			list.add(i);
 		}
 		return list;
 	}
@@ -68,7 +68,7 @@ public class Test {
 	 */
 	public static Time runSampleSystem(int threshold) throws Exception
 	{
-		double TgenTime=0,IgenTime=0,IcollTime=0,IverfyTime=0;
+		double TgenTime=0,IgenTime=0,IcollTime=0,IverfyTime=0,IpoicTime=0, IpoicVTime=0;
 		double startTime=0,endTime=0;
 		//sets up a server with the given threshold
 		Server s = Server.getInstance(threshold);
@@ -99,6 +99,20 @@ public class Test {
 				endTime=System.currentTimeMillis();
 				IgenTime+=endTime-startTime;
 
+				POICwitness wit=new POICwitness(u.getShare().getShare(),invitation.getEd()[2],invitation.getDi());
+				startTime=System.currentTimeMillis();
+				POICproof proof=ZKPOIC.prove(invitation,t,wit);
+				endTime=System.currentTimeMillis();
+				IpoicTime+=endTime-startTime;
+
+
+				BigInteger gammai=s.getG().modPow(u.getShare().getShare(),s.getP());
+
+				startTime=System.currentTimeMillis();
+				ZKPOIC.verify(invitation, t, gammai, proof);
+				endTime=System.currentTimeMillis();
+				IpoicVTime+=endTime-startTime;
+
 				invList[j]=invitation;
 			}
 			//collect the invitations
@@ -115,7 +129,7 @@ public class Test {
 			endTime=System.currentTimeMillis();
 			IverfyTime+=endTime-startTime;
 
-		//	System.out.println("The verdict is: " + n);
+			//System.out.println("The verdict is: " + n);
 
 		}
 		//System.out.println("Tgen run time nano: " + TgenTime/N);
@@ -123,7 +137,7 @@ public class Test {
 		//System.out.println("Icoll run time nano: " +  IcollTime/N);
 		//System.out.println("Ivrfy run time nano: " + IverfyTime/N);
 
-		Time avgTime=new Time(TgenTime/N, IgenTime/(N*threshold), IcollTime/N, IverfyTime/N);
+		Time avgTime=new Time(TgenTime/N, IgenTime/(N*threshold), IcollTime/N, IverfyTime/N, IpoicTime/(N*threshold), IpoicVTime/(N*threshold));
 
 		return avgTime;
 	}
@@ -153,6 +167,20 @@ public class Test {
 		for(int i=0;i<avgTimeList.size();i++)
 		{
 			System.out.print(avgTimeList.get(i).getIVrfy()+"\t ");
+		}
+
+		System.out.println("\nPOIC");
+
+		for(int i=0;i<avgTimeList.size();i++)
+		{
+			System.out.print(avgTimeList.get(i).getIpoic()+"\t ");
+		}
+
+		System.out.println("\nVerification of POIC");
+
+		for(int i=0;i<avgTimeList.size();i++)
+		{
+			System.out.print(avgTimeList.get(i).getIpoicV()+"\t ");
 		}
 	}
 }

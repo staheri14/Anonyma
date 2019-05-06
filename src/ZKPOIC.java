@@ -6,6 +6,14 @@ import java.security.SecureRandom;
 
 public class ZKPOIC {
 
+    /**
+     *
+     * @param invitation
+     * @param token
+     * @param wit
+     * @return
+     * @throws Exception
+     */
     public static POICproof prove(Invitation invitation, Token token, POICwitness wit) throws Exception
     {
 
@@ -31,20 +39,30 @@ public class ZKPOIC {
 
 
         BigInteger A=g.modPow(sprime,p);
-        BigInteger B=(w.modPow(dprime, p).multiply(h.modPow(rprime,p))).mod(p);
+        BigInteger B1=(w.modPow(dprime, p).multiply(h.modPow(rprime,p))).mod(p);
+        BigInteger B2=(g.modPow(rprime,p)).mod(p);
         BigInteger C=w.modPow(sprime.add(dprime), p);
 
-        BigInteger e=hash(A,B,B).mod(q);
+        BigInteger e=hash(A,B1,B2,C).mod(q);
 
         BigInteger Z1=(sprime.add(e.multiply(si))).mod(q);
         BigInteger Z2=(dprime.add(e.multiply(di))).mod(q);
         BigInteger Z3=(rprime.add(e.multiply(r))).mod(q);
 
-        POICproof proof=new POICproof(A,B,C,Z1,Z2,Z3,e);
+        POICproof proof=new POICproof(A,B1,B2,C,Z1,Z2,Z3,e);
         return proof;
     }
 
-    static BigInteger  hash(BigInteger A, BigInteger B, BigInteger C) throws  Exception
+    /**
+     *
+     * @param A
+     * @param B1
+     * @param B2
+     * @param C
+     * @return
+     * @throws Exception
+     */
+    static BigInteger  hash(BigInteger A, BigInteger B1, BigInteger B2, BigInteger C) throws  Exception
     {
         // Static getInstance method is called with hashing SHA
         MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -53,13 +71,15 @@ public class ZKPOIC {
         // to calculate message digest of an input
         // and return array of byte
         byte [] Abarray=A.toByteArray();
-        byte [] Bbarray=B.toByteArray();
+        byte [] B1barray=B1.toByteArray();
+        byte [] B2barray=B2.toByteArray();
         byte [] Cbarray=C.toByteArray();
 
-        byte [] input= new byte[Abarray.length + Bbarray.length  + Cbarray.length ];
+        byte [] input= new byte[Abarray.length + B1barray.length  + B2barray.length + Cbarray.length ];
         System.arraycopy(Abarray, 0, input, 0, Abarray.length );
-        System.arraycopy(Bbarray, 0, input, Abarray.length, Bbarray.length );
-        System.arraycopy(Cbarray, 0, input, Abarray.length+Bbarray.length, Cbarray.length );
+        System.arraycopy(B1barray, 0, input, Abarray.length, B1barray.length );
+        System.arraycopy(B2barray, 0, input, Abarray.length+B1barray.length, B2barray.length );
+        System.arraycopy(Cbarray, 0, input, Abarray.length+B1barray.length+B2barray.length, Cbarray.length );
         byte[] messageDigest = md.digest(input);
 
         // Convert byte array into signum representation
@@ -67,6 +87,15 @@ public class ZKPOIC {
         return no;
     }
 
+    /**
+     *
+      * @param invitation
+     * @param token
+     * @param gammai
+     * @param proof
+     * @return
+     * @throws Exception
+     */
     public static Boolean verify(Invitation invitation, Token token, BigInteger gammai, POICproof proof) throws Exception
     {
         Server server = Server.getInstance();
@@ -76,11 +105,36 @@ public class ZKPOIC {
         BigInteger q=server.getQ();
         BigInteger g=server.getG();
         BigInteger w = token.getOmega();
+        BigInteger edi1= invitation.getEd()[0];
+        BigInteger edi2= invitation.getEd()[1];
+        BigInteger T= invitation.getT();
 
-        BigInteger C1r=(proof.getA().multiply(gammai.modPow(proof.getE(),p))).mod(p);
-        BigInteger C1l=g.modPow(proof.getZ1(),p);
+        BigInteger A=proof.getA();
+        BigInteger B1=proof.getB1();
+        BigInteger B2=proof.getB2();
+        BigInteger C=proof.getC();
+        BigInteger Z1=proof.getZ1();
+        BigInteger Z2=proof.getZ2();
+        BigInteger Z3=proof.getZ3();
+        BigInteger E=proof.getE();
 
-        proof.getB().multiply(invitation.getEd())
+
+
+
+        BigInteger C1l=(A.multiply(gammai.modPow(E,p))).mod(p);
+        BigInteger C1r=g.modPow(Z1,p);
+
+        BigInteger C2l =(B1.multiply(edi1.modPow(E,p))).mod(p);
+        BigInteger C2r =(w.modPow(Z2, p).multiply(h.modPow(Z3,p))).mod(p);
+
+
+        BigInteger C3l=(B2.multiply(edi2.modPow(E,p))).mod(p);
+        BigInteger C3r = g.modPow(Z3,p);
+
+        BigInteger C4l= (((C.multiply(T.modPow(E,p))).mod(p)).multiply(h.modPow(Z3,p))).mod(p);
+        BigInteger C4r= (((B1.multiply(edi1.modPow(E,p))).mod(p)).multiply(w.modPow(Z1,p))).mod(p);
+
+
 
         return  true;
     }
