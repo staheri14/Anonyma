@@ -109,6 +109,7 @@ public class Shamir_Scheme {
 		}
 		
 		BigInteger coeff = numerator.multiply(denominator.modInverse(q));
+		coeff=coeff.mod(q);
 		
 		return coeff;
 	}

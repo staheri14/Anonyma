@@ -66,6 +66,7 @@ throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParame
 	public void resetFunction(int threshold)
 	{
 		f = shamir.functionGeneration(S, threshold, q);
+		
 
 	}
 
@@ -116,7 +117,7 @@ throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParame
 		vk = RSAKeyPair.getPublic();
 		
 		S = new BigInteger(q.bitLength(), random).mod(q);
-		f = shamir.functionGeneration(S, threshold, q);
+		//f = shamir.functionGeneration(S, threshold, q);
 		//users = generateUsers();
 		users=new ArrayList<>();//initialize an empty list of users
 	}

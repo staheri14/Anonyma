@@ -48,14 +48,18 @@ public class Invitee {
 		for(int i = 0; i < B.length; i++) {
 			B[i] = shamir.lagrangeCoefficients(IDs, i, q);
 		}		
-				
+
+		//double start=System.currentTimeMillis();
 		BigInteger T = w.modPow(d, p); 
 		BigInteger[] ed = gamal.encrypt(T, ek,q);
-		for(int i = 0; i < Inv.length; i++) {			
+		for(int i = 0; i < Inv.length; i++) {
 			T = T.multiply((Inv[i].getT()).modPow(B[i], p));
 			//ed = gamal.multiply(ed, gamal.pow(Inv[i].getEd(), B[i], server.ek), server.ek);
 			ed = gamal.multiply(ed, gamal.pow(Inv[i].getEd(), B[i], server.ek, q), server.ek, q);
 		}
+		//double end=System.currentTimeMillis();
+
+		//System.out.println(end-start);
 		
 		return new Invitation(T.mod(p), ed, null, null);
 				

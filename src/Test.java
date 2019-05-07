@@ -56,7 +56,7 @@ public class Test {
 			{
 				index=r.nextInt(range);
 			}
-			list.add(i);
+			list.add(index);
 		}
 		return list;
 	}
@@ -68,14 +68,22 @@ public class Test {
 	 */
 	public static Time runSampleSystem(int threshold) throws Exception
 	{
-		double TgenTime=0,IgenTime=0,IcollTime=0,IverfyTime=0,IpoicTime=0, IpoicVTime=0;
+		double TgenTime=0,IgenTime=0,IcollTime=0,IverfyTime=0,IpoicTime=0, IpoicVTime=0, RegTime=0, SetupTime=0, FReset;
 		double startTime=0,endTime=0;
+		startTime=System.currentTimeMillis();
 		//sets up a server with the given threshold
 		Server s = Server.getInstance(threshold);
+		endTime=System.currentTimeMillis();
+		SetupTime+=endTime-startTime;
+
+
 		s.resetFunction(threshold);
 		//initialize M members
 		for(int i=0;i<M;i++){
+			startTime=System.currentTimeMillis();
 			s.Reg(i); //this function creates a user with index i and adds to the server's list of users
+			endTime=System.currentTimeMillis();
+			RegTime+=endTime-startTime;
 		}
 		for(int i=0;i<N;i++){
 			startTime=System.currentTimeMillis();
