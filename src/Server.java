@@ -33,6 +33,7 @@ public class Server {
 	private BigInteger q;
 	private BigInteger g; 
 	private BigInteger[] f;
+	private BigInteger[] FCommitments;
 	private BigInteger S;
 	private int threshold;
   private static Server instance;
@@ -63,11 +64,19 @@ throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParame
 			throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
 		return instance;
 	}
+
+	/**
+	 * generate the polynomial of degree threshold-1, also the commitments to the coefficients
+	 * @param threshold
+	 */
 	public void resetFunction(int threshold)
 	{
 		f = shamir.functionGeneration(S, threshold, q);
-		
-
+		FCommitments=new BigInteger[threshold];
+		for (int i=0; i<f.length;i++)
+		{
+			FCommitments[i]=g.modPow(f[i],p);
+		}
 	}
 
   /**

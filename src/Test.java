@@ -13,7 +13,7 @@ public class Test {
 	public static void main(String[] args) throws Exception {
 
 		ArrayList<Time> avgTimeList=new ArrayList<>();
-		for (int thr=1;thr<10;thr++)
+		for (int thr=2;thr<11;thr++)
 		{
 			Time avgTime=runSampleSystem(thr);
 			avgTimeList.add(avgTime);
@@ -68,16 +68,20 @@ public class Test {
 	 */
 	public static Time runSampleSystem(int threshold) throws Exception
 	{
-		double TgenTime=0,IgenTime=0,IcollTime=0,IverfyTime=0,IpoicTime=0, IpoicVTime=0, RegTime=0, SetupTime=0, FReset;
+		double TgenTime=0,IgenTime=0,IcollTime=0,IverfyTime=0,IpoicTime=0, IpoicVTime=0, RegTime=0, SetupTime=0;
 		double startTime=0,endTime=0;
 		startTime=System.currentTimeMillis();
 		//sets up a server with the given threshold
 		Server s = Server.getInstance(threshold);
 		endTime=System.currentTimeMillis();
+		System.out.println("Initial setup takes: " + (endTime-startTime) +"ms");
+
+		startTime=System.currentTimeMillis();
+		s.resetFunction(threshold);
+		endTime=System.currentTimeMillis();
 		SetupTime+=endTime-startTime;
 
 
-		s.resetFunction(threshold);
 		//initialize M members
 		for(int i=0;i<M;i++){
 			startTime=System.currentTimeMillis();
@@ -145,7 +149,7 @@ public class Test {
 		//System.out.println("Icoll run time nano: " +  IcollTime/N);
 		//System.out.println("Ivrfy run time nano: " + IverfyTime/N);
 
-		Time avgTime=new Time(TgenTime/N, IgenTime/(N*threshold), IcollTime/N, IverfyTime/N, IpoicTime/(N*threshold), IpoicVTime/(N*threshold));
+		Time avgTime=new Time(TgenTime/N, IgenTime/(N*threshold), IcollTime/N, IverfyTime/N, IpoicTime/(N*threshold), IpoicVTime/(N*threshold), RegTime/M, SetupTime);
 
 		return avgTime;
 	}
@@ -189,6 +193,20 @@ public class Test {
 		for(int i=0;i<avgTimeList.size();i++)
 		{
 			System.out.print(avgTimeList.get(i).getIpoicV()+"\t ");
+		}
+
+		System.out.println("\nReg");
+
+		for(int i=0;i<avgTimeList.size();i++)
+		{
+			System.out.print(avgTimeList.get(i).getReg()+"\t ");
+		}
+
+		System.out.println("\nRecalculating the polynomial takes");
+
+		for(int i=0;i<avgTimeList.size();i++)
+		{
+			System.out.print(avgTimeList.get(i).getSetup()+"\t ");
 		}
 	}
 }
